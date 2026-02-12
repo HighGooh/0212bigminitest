@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
-import {useNavigate} from 'react-router'
+import { useNavigate } from 'react-router'
 
 const Home = () => {
     const nav = useNavigate()
@@ -33,13 +33,13 @@ const Home = () => {
                     </thead>
                     <tbody>
                         {
-                            list.map((v,i)=>
-                            <tr className="cursor-pointer" key={i} onClick={()=>nav(`/boardview/${v.no}`)}>
-                                <td>{i+1}</td>
-                                <td>{v.title}</td>
-                                <td>{v.regDate}</td>
-                                <td>{v.name}</td>
-                            </tr>
+                            list.map((v, i) =>
+                                <tr className="cursor-pointer" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
+                                    <td>{i + 1}</td>
+                                    <td>{v.title}</td>
+                                    <td>{v.regDate}</td>
+                                    <td>{v.name}</td>
+                                </tr>
                             )
                         }
                     </tbody>
