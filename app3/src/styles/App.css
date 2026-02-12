@@ -7,7 +7,7 @@
 .user_pt {
     margin-top: 50px;
     width: 200px;
-    height: 200px;
+    height: 200px !important;
     border-radius: 50%;
     position: sticky;
     left: 50%;
