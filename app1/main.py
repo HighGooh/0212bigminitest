@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
 from kafka import KafkaProducer
 from settings import settings
-from pydantic import EmailStr, BaseModel, Field
+from pydantic import EmailStr, BaseModel
 import json
 import redis
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
-from db import findOne, findAll, save
+from db import findOne, findAll, save, add_key
 # from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -21,9 +21,6 @@ class EmailModel(BaseModel):
 class CodeModel(BaseModel):
   code: str
 
-class boardModel(BaseModel):
-    title: str
-    content: str
 
 def set_token(email: str):
   try:
@@ -154,6 +151,7 @@ def me(request : Request):
             ifnull(u.profileNo, 0) AS profileNo
             FROM `test`.user AS u
             where u.`no` = '{data["sub"]}'
+            and u.`delYn` = 0;
     '''
     userInfo = findOne(sql)
     return {"status": True, "user" : userInfo}
@@ -183,81 +181,24 @@ def profile(no: str):
     path = UPLOAD_DIR / fileName
     return FileResponse(path=path)
   return {"status": False}
-@app.post("/boardadd")
-def boardadd(boardmodel:boardModel, request:Request):
-        id = request.cookies.get("user")
-        try:
-              if id :
-                token = client.get(id)
-                data = jwt.decode(token,settings.secret_key,algorithms=settings.algorithm)
-                sql = f'''
-                SELECT * FROM `test`.user where `no` = '{data["sub"]}'
-                '''
-                userInfo = findOne(sql)
-                sql =  f"""
-                  INSERT INTO test.board (`userEmail`,`title`,`content`)
-                  VALUES ('{userInfo["email"]}','{boardmodel.title}','{boardmodel.content}');
-                  """
-                save(sql)
-                return {"status" : True, "msg":"게시글이 작성되었습니다."}
-        except JWTError as e :
-          print(f"실패원인: {e}")
-        return {"status": False, "msg": "로그인을 확인해주세요."}
-  
-class SignupModel(BaseModel):
-    name: str
-    email: str
-    gender: bool
 
-@app.post("/checkemail")
-def checkemail(model: EmailModel):
-  sql = f"SELECT `email` from test.user WHERE `email` = '{model.email}' "
-  checkemail = findOne(sql)
-  if checkemail:
-    return {"status": False, "msg": "중복된 이메일입니다."}
-  else:
-    return {"status": True, "msg": "사용 가능한 이메일입니다."}
-
-@app.post("/signup")
-def signup(model: SignupModel):
-  sql = f"insert into test.user (`name`,`email`,`gender`) VALUE ('{model.name}','{model.email}', {model.gender})"
-  data = save(sql)
-  if data:
-    return {"status": True, "msg": "회원 가입을 축하합니다. 로그인 페이지로 이동합니다."}
-  return {"status": False, "msg": "가입 중 오류가 발생했습니다."}
-
-@app.get("/getList")
-def read_root():
+@app.post('/delYn')
+def delYn(model: EmailModel, response:Response, request: Request):
+    id = request.cookies.get("user")
+    client.delete(id)
+    response.delete_cookie(
+        key="user",
+        path="/",
+        secure=False,  
+        httponly=True,
+        samesite="lax",
+    )
     sql = f'''
-    select b.`no`, b.`title`, u.`name`, b.`regDate`
-    from `test`.`board` as b
-    inner Join `test`.`user` as u
-    on(b.`userEmail` = u.`email`)
-    where b.`delYn` = 0;
+    UPDATE test.`user`
+    SET user.`delYn` = 1
+    WHERE `email` = '{model.email}';
     '''
-    data = findAll(sql)
-    return {"status": True, "boardList" : data}
-
-class boardModel(BaseModel):
-    params:str = Field(..., title="게시글넘버", description="게시글넘버 입니다.")
-
-@app.post("/boardview")
-def boardview(item : boardModel, req: Request):
-    sql = f'''
-    select b.`title`, u.`name`, b.`content`, b.`user_email`
-    from `test`.`board` as b
-    inner Join `test`.`user` as u
-    on(b.`user_email` = u.email)
-    where (b.`no` = {item.params});
-    '''
-    data = findOne(sql)
-
-    uuid = req.cookies.get('user')
-    
-    log_sql = f'''
-    select `token` from `test`.`login`
-    where `test`.`login`.`uuid` = '{uuid}'
-    '''
-    idData = findOne(log_sql)
-    result = jwt.decode(idData["token"], SECRET_KEY, algorithms=ALGORITHM)
-    return {"status": True, "boardData": data, "login": result}
+    data = save(sql)
+    if data:
+      return {"status": True, "msg": "탈퇴가 완료되었습니다."}
+    return {"status":False, "msg":"다시 시도해주세요."}

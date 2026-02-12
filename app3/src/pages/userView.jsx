@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router"
-import { useAuth } from "@hooks/AuthProvider"
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
 
@@ -12,7 +11,6 @@ const UserView = () => {
 	const [modDate, setModDate] = useState('')
 	const [gender, setGender] = useState('')
 	const [profile, setProfile] = useState(0)
-	const {removeAuth}=useAuth()
 	const path = import.meta.env.VITE_APP_FASTAPI_URL || "http://localhost:8001";
 
 	useEffect(()=> {
@@ -35,8 +33,14 @@ const UserView = () => {
 		return "/img01.jpg"
 	}
 	const delYn = ()=>{
-		removeAuth()
-		// sql delYn =1
+		api.post('/delYn', {email})
+		.then(res => {
+        if (res.data.status) {
+          alert(res.data.msg)
+          nav("/")          
+        } else {
+          alert(res.data.msg)
+        }})
 	}
 	return (
 		<div className="container mt-3 position-relative">
