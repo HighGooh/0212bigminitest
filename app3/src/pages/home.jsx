@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
-import {useNavigate} from 'react-router'
+import { useNavigate } from 'react-router'
 
 const Home = () => {
     const nav = useNavigate()
@@ -15,7 +15,7 @@ const Home = () => {
                 <h1 className="display-1 text-center">게시판</h1>
                 <div className="d-flex justify-content-between align-items-center mt-4">
                     <div className="btn-group">
-                        <button className="btn btn-primary">게시글 작성</button>
+                        <button type="button" onClick={() => nav("/boardadd")} className="btn btn-primary">게시글 작성</button>
                     </div>
                     <form className="d-flex" style={{ maxWidth: "300px" }}>
                         <input className="form-control me-2" type="search" placeholder="검색어를 입력하세요" />
@@ -33,13 +33,13 @@ const Home = () => {
                     </thead>
                     <tbody>
                         {
-                            list.map((v,i)=>
-                            <tr className="cursor-pointer" key={i} onClick={()=>nav(`/boardview/${v.no}`)}>
-                                <td>{i+1}</td>
-                                <td>{v.title}</td>
-                                <td>{v.regDate}</td>
-                                <td>{v.name}</td>
-                            </tr>
+                            list.map((v, i) =>
+                                <tr className="cursor-pointer" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
+                                    <td>{i + 1}</td>
+                                    <td>{v.title}</td>
+                                    <td>{v.regDate}</td>
+                                    <td>{v.name}</td>
+                                </tr>
                             )
                         }
                     </tbody>

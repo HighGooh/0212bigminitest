@@ -1,25 +1,32 @@
 import { api } from '@utils/network.js'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
+import { useAuth } from "@hooks/AuthProvider"
 
 const BoardAdd = () => {
   const nav = useNavigate("")
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+  const { isLogin } = useAuth()
 
   const submitEvent = e => {
     e.preventDefault()
-    const board = {"title": title, "content": content}
+    const board = { "title": title, "content": content }
     api.post('/boardadd', board)
-		.then(res => {
-      alert(res.data.msg)
-      nav("/")
-    })
-		.catch(res => {
-      alert(res.data.msg)
-    })
+      .then(res => {
+        alert(res.data.msg)
+        nav("/")
+      })
+      .catch(res => {
+        alert(res.data.msg)
+      })
+  }
+  useEffect(() => {
+    if (!isLogin) {
+      alert("로그인이 필요합니다.")
+      nav("/login")
     }
-
+  }, [])
 
   return (
     <div className="container mt-3">
@@ -27,20 +34,20 @@ const BoardAdd = () => {
       <form onSubmit={submitEvent} >
         <div className="mb-3 mt-3">
           <label htmlFor="title" className="form-label">제목</label>
-          <input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title" 
-            value={title} onChange={e => setTitle(e.target.value)}/>
+          <input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title"
+            value={title} onChange={e => setTitle(e.target.value)} />
         </div>
         <div className="mb-3 mt-3">
           <label htmlFor="content" className="form-label" value={content}>내용</label>
           <textarea type="text" className="form-control h-50" rows="10" placeholder="내용을 입력하세요."
-            name="content"  value={content} onChange={e => setContent(e.target.value)}></textarea>
+            name="content" value={content} onChange={e => setContent(e.target.value)}></textarea>
         </div>
         <div className="d-flex">
           <div className="p-2 flex-fill d-grid">
             <button className="btn btn-primary">등록</button>
           </div>
           <div className="p-2 flex-fill d-grid">
-            <button onClick={()=>nav("/")} className="btn btn-primary">취소</button>
+            <button onClick={() => nav("/")} className="btn btn-primary">취소</button>
           </div>
         </div>
       </form>
