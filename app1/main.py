@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Response, Request, File, UploadFile, Form
 from kafka import KafkaProducer
 from settings import settings
 from pydantic import EmailStr, BaseModel,  Field
@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import uuid
 from pathlib import Path
+import shutil
 
 # security = HTTPBearer()
 
@@ -89,6 +90,9 @@ client = redis.Redis(
 origins = [ "http://localhost","http://localhost:5173" ]
 
 UPLOAD_DIR = Path("uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+MAX_FILE_SIZE = 10 * 1024
+FILE_CONTENT_TYPE = "image/png"
 
 app.add_middleware(
     CORSMiddleware,
@@ -283,3 +287,32 @@ def delYn(model: EmailModel, response:Response, request: Request):
     if data:
       return {"status": True, "msg": "탈퇴가 완료되었습니다."}
     return {"status":False, "msg":"다시 시도해주세요."}
+
+def saveFile(file):
+  UPLOAD_DIR.mkdir(exist_ok=True)
+  origin = file.filename
+  ext = origin.split(".")[-1].lower()
+  id = uuid.uuid4().hex
+  newName = f"{id}.{ext}"
+  sql = f"""
+    insert into test.`profile` (`origin`, `ext`, `fileName`) 
+    value ('{origin}','{ext}','{newName}')
+  """
+  result = add_key(sql)
+  if result[0]:
+    path = UPLOAD_DIR / newName
+    with path.open("wb") as f:
+      shutil.copyfileobj(file.file, f)
+    return result[1]
+  return 0
+
+@app.post("/upload")
+def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: UploadFile = File()):
+  result = saveFile(file)
+  sql = f'''
+    UPDATE test.`user`
+    SET `profileNo` = {result}, `name` = '{name}', `gender` = {gender}
+    WHERE `email` = '{email}';
+    '''
+  data = save(sql)
+  return {"status": True, "msg": "회원 정보 수정이 완료되었습니다."}
