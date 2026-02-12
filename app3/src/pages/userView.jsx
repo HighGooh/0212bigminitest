@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router"
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
+import { useAuth } from "@hooks/AuthProvider"
 
 const UserView = () => {
-
 	const nav = useNavigate()
+	const { isLogin } = useAuth()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
@@ -13,34 +14,40 @@ const UserView = () => {
 	const [profile, setProfile] = useState(0)
 	const path = import.meta.env.VITE_APP_FASTAPI_URL || "http://localhost:8001";
 
-	useEffect(()=> {
-		api.post("/me")
-			.then(res=>{
-				console.log(res.data)
-				setName(res.data.user.name)
-				setEmail(res.data.user.email)
-				setRegDate(res.data.user.regDate)
-				setModDate(res.data.user.modDate)
-				setGender(res.data.user.gender)
-				setProfile(res.data.user.profileNo)
-			})
-	},[])
+	useEffect(() => {
+		if (!isLogin) {
+			alert("로그인이 필요한 페이지입니다.")
+			nav("/")
+		} else {
+			api.post("/me")
+				.then(res => {
+					console.log(res.data)
+					setName(res.data.user.name)
+					setEmail(res.data.user.email)
+					setRegDate(res.data.user.regDate)
+					setModDate(res.data.user.modDate)
+					setGender(res.data.user.gender)
+					setProfile(res.data.user.profileNo)
+				})
+		}
+	}, [])
 
 	const getUrl = () => {
-		if ( profile > 0 )
-		return `${path}/profile?no=${profile}`
-		else 
-		return "/img01.jpg"
+		if (profile > 0)
+			return `${path}/profile?no=${profile}`
+		else
+			return "/img01.jpg"
 	}
-	const delYn = ()=>{
-		api.post('/delYn', {email})
-		.then(res => {
-        if (res.data.status) {
-          alert(res.data.msg)
-          nav("/")          
-        } else {
-          alert(res.data.msg)
-        }})
+	const delYn = () => {
+		api.post('/delYn', { email })
+			.then(res => {
+				if (res.data.status) {
+					alert(res.data.msg)
+					nav("/")
+				} else {
+					alert(res.data.msg)
+				}
+			})
 	}
 	return (
 		<div className="container mt-3 position-relative">
@@ -90,7 +97,7 @@ const UserView = () => {
 						<button type="button" onClick={() => nav("/useredit")} className="btn btn-primary">수정</button>
 					</div>
 					<div className="p-2 flex-fill d-grid">
-						<button type="button" onClick={()=>delYn()} className="btn btn-primary">탈퇴</button>
+						<button type="button" onClick={() => delYn()} className="btn btn-primary">탈퇴</button>
 					</div>
 				</div>
 			</form>
