@@ -18,27 +18,28 @@ client = redis.Redis(
 
 ### --- 게시글 관련 API --- ###
 
-@router.get("/getList")
-def read_root():
+@router.get("/getList/{no}")
+def read_root(no:int):
+    print(no)
     sql = f'''
-    select b.`no`, b.`title`, u.`name`, b.`regDate`
-    from `test`.`board` as b
-    inner Join `test`.`user` as u
-    on(b.`userEmail` = u.`email`)
-    where b.`delYn` = 0;
+    select b.no, b.title, u.name, b.regDate
+    from test.board as b
+    inner Join test.user as u
+    on(b.userEmail = u.email)
+    where b.delYn = 0
+    ORDER by regDate ASC
+    Limit 5 OFFSET {5*no};
     '''
     data = findAll(sql)
-    # 5개씩 묶어서 리스트화 하는 로직
-    result = []
-    list = []
-    for i in range(len(data)):
-      list.append(data[i])
-      if (i+1) % 5 == 0:
-         result.append(list)
-         list = []
-      if i+1 == len(data):
-        result.append(list)
-    return {"status": True, "boardList" : data}
+
+    sql2 = f'''
+    SELECT CEIL(COUNT(no)/5) AS cnt
+    FROM test.board
+    WHERE delYn = 0;
+    '''
+    data2 = findOne(sql2)
+    result = data2['cnt']
+    return {"status": True, "boardList" : data, "pageLen": result}
 
 @router.post("/boardadd")
 def boardadd(boardmodel:boardModel, request:Request):
@@ -93,18 +94,33 @@ def boardDel(no:int):
     '''
     save(sql)
 
-@router.post("/search")
-def read_root(txt:searchModel):
+@router.post("/search/{no}")
+def read_root(txt:searchModel, no:int):
+    print(no)
     sql = f'''
     select b.no, b.title, b.regDate ,u.name
     from test.board as b
     inner Join test.user as u
     on(b.userEmail = u.email)
     where b.delYn = 0
-    and b.title like "%{txt.search}%";
+    and b.title like "%{txt.search}%"
+    ORDER by regDate ASC
+    Limit 5 OFFSET {5*no};
     '''
     data = findAll(sql)
-    return {"status": True, "boardList" : data}
+
+    sql2 = f'''
+    SELECT CEIL(COUNT(no)/5) AS cnt
+    FROM test.board
+    WHERE delYn = 0
+    and title like "%{txt.search}%";
+    '''
+    data2 = findOne(sql2)
+    result = data2['cnt']
+
+    print(result)
+
+    return {"status": True, "boardList" : data, "pageLen": result}
 
 ### --- 댓글 관련 API --- ###
 
