@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from "@hooks/AuthProvider"
 
 const BoardView = () => {
 	const styles = { "resize": "none", "overFlow": "hidden" }
@@ -15,6 +16,14 @@ const BoardView = () => {
 	const [commentCont, setCommentCont] = useState('')
 	const [clickCom, setClickCom] = useState('')
 	const [editCom, setEditCom] = useState('')
+	const { path } = useAuth()
+
+	const getUrl = (profileNo) => {
+		if (profileNo > 0)
+			return `${path}/profile?no=${profileNo}`
+		else
+			return "/img01.jpg"
+	}
 
 	function onload() {
 		document.querySelectorAll(".auto-resize").forEach(textarea => {
@@ -63,9 +72,8 @@ const BoardView = () => {
 	}
 
 	const commentEdit = (commentNo) => {
-		console.log(editCom)
 		if (editCom) {
-			api.post(`/commentedit`, {editCom, commentNo})
+			api.post(`/commentedit`, { editCom, commentNo })
 			alert("댓글이 수정되었습니다")
 			setEditCom('')
 		}
@@ -127,7 +135,7 @@ const BoardView = () => {
 						<div className="comments my-3 w-100 pb-2" key={i}>
 							<div className="d-flex align-items-start">
 								{/* <!-- 프로필 이미지 --> */}
-								<img src="../img01.jpg" className="rounded-circle me-3" width="50" height="50" alt="profile" />
+								<img src={getUrl(v.profileNo)} className="rounded-circle me-3" width="50" height="50" alt="profile" />	 {/* <!-- v.profileNo --> */}
 								{/* <!-- 댓글 내용 --> */}
 								<div className="flex-grow-1">
 									<div className="d-flex justify-content-between align-items-center">
