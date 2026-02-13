@@ -7,7 +7,7 @@ const Nav = () => {
 	const nav = useNavigate()
 	const { removeAuth, isLogin, setChangeProfile, profilePath } = useAuth();
 	
-
+	// 로그인 시 프로필 사진 반영
 	useEffect(() => {
 		if (isLogin) {
 			api.post("/me")
@@ -57,7 +57,7 @@ const Nav = () => {
 							}
 						</ul>
 						{
-							isLogin && <img src={profilePath} className="border user_pt_nav mt-1 object-fit-cover" />
+							isLogin && <img src={profilePath} className="border user_pt_nav mt-1 object-fit-cover" onClick={()=>nav('/userview')}/>
 						}
 					</div>
 				</div>
