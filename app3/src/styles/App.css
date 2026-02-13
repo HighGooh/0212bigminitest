@@ -4,8 +4,25 @@
 }
 
 
-.user_pt {
+.user_pt_view {
     margin-top: 50px;
+    width: 200px;
+    height: 200px !important;
+    border-radius: 50%;
+    position: sticky;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: .2s;
+}
+
+.user_pt {
+    width: 200px;
+    height: 200px !important;
+    border-radius: 50%;
+    transition: .2s;
+}
+
+.user_label {
     width: 200px;
     height: 200px !important;
     border-radius: 50%;
