@@ -235,29 +235,38 @@ def signup(model: SignupModel):
     return {"status": True, "msg": "회원 가입을 축하합니다. 로그인 페이지로 이동합니다."}
   return {"status": False, "msg": "가입 중 오류가 발생했습니다."}
 
-@app.get("/getList")
-def read_root():
+@app.get("/getList/{no}")
+def read_root(no:int):
+    print(no)
     sql = f'''
     select b.`no`, b.`title`, u.`name`, b.`regDate`
     from `test`.`board` as b
     inner Join `test`.`user` as u
     on(b.`userEmail` = u.`email`)
-    where b.`delYn` = 0;
+    where b.`delYn` = 0
+    ORDER by `regDate` ASC
+    Limit 5 OFFSET {5*no};
     '''
     data = findAll(sql)
 
-    result = []
-    list = []
+    sql2 = f'''
+    SELECT CEIL(COUNT(`no`)/5) AS cnt
+    FROM `test`.`board`
+    WHERE `delYn` = 0;
+    '''
+    data2 = findOne(sql2)
+    result = data2['cnt']
 
-    for i in range(len(data)):
-      list.append(data[i])
-      if (i+1) % 5 == 0:
-         result.append(list)
-         list = []
-      if i+1 == len(data):
-        result.append(list)
-
-    return {"status": True, "boardList" : data}
+    # for i in range(len(data2)):
+    #   list.append(data2[i])
+    #   if (i+1) % 5 == 0:
+    #      result.append(list)
+    #      list = []
+    #   if i+1 == len(data2) and len(list) > 0:
+    #     result.append(list)
+    # listLen = len(result)
+    # print(result)
+    return {"status": True, "boardList" : data, "pageLen": result}
 
 class boardModel(BaseModel):
     params:str = Field(..., title="게시글넘버", description="게시글넘버 입니다.")
@@ -411,15 +420,31 @@ def boardedit(model:commentEditModel,):
     save(sql)
     return {"status": True}
   
-@app.post("/search")
-def read_root(txt:searchModel):
+@app.post("/search/{no}")
+def read_root(txt:searchModel, no:int):
+    print(no)
     sql = f'''
     select b.no, b.title, b.regDate ,u.name
     from test.board as b
     inner Join test.user as u
     on(b.userEmail = u.email)
     where b.delYn = 0
-    and b.title like "%{txt.search}%";
+    and b.title like "%{txt.search}%"
+    ORDER by `regDate` ASC
+    Limit 5 OFFSET {5*no};
     '''
     data = findAll(sql)
-    return {"status": True, "boardList" : data}
+
+    sql2 = f'''
+    SELECT CEIL(COUNT(`no`)/5) AS cnt
+    FROM `test`.`board`
+    WHERE `delYn` = 0
+    and title like "%{txt.search}%";
+    '''
+    data2 = findOne(sql2)
+    result = data2['cnt']
+
+    print(result)
+
+    return {"status": True, "boardList" : data, "pageLen": result}
+    
