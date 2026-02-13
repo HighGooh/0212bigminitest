@@ -1,14 +1,11 @@
 import { api } from '@utils/network.js'
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router"
-import { useAuth } from "@hooks/AuthProvider"
 
 const BoardAdd = () => {
   const nav = useNavigate("")
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const { isLogin } = useAuth()
-
   const submitEvent = e => {
     e.preventDefault()
     const board = { "title": title, "content": content }
@@ -21,12 +18,6 @@ const BoardAdd = () => {
         alert(res.data.msg)
       })
   }
-  useEffect(() => {
-    if (!isLogin) {
-      alert("로그인이 필요합니다.")
-      nav("/login")
-    }
-  }, [])
 
   return (
     <div className="container mt-3">

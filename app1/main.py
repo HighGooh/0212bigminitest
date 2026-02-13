@@ -314,5 +314,14 @@ def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: 
     SET `profileNo` = {result}, `name` = '{name}', `gender` = {gender}
     WHERE `email` = '{email}';
     '''
-  data = save(sql)
-  return {"status": True, "msg": "회원 정보 수정이 완료되었습니다."}
+  save(sql)
+  return {"status": True, "msg": "회원 정보 수정이 완료되었습니다.", "fileNo": result}
+
+@app.post('/change')
+def change(email: str):
+   sql = f"""
+SELECT profileNo
+FROM user
+WHERE `email` = {email} ;
+"""
+   return{'status': True}

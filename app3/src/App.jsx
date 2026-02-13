@@ -11,24 +11,43 @@ import UserEdit from '@pages/userEdit.jsx'
 import BoardAdd from '@pages/boardAdd.jsx'
 import BoardView from '@pages/boardView.jsx'
 import BoardEdit from '@pages/boardEdit.jsx'
+import { useAuth } from '@hooks/AuthProvider';
+import { useEffect, useState } from 'react';
+
+
+const paths1 = [
+  { path: "/", element: <Home /> },
+  { path: "/login", element: <Login /> },
+  { path: "/signup", element: <SignUp /> },
+  { path: "/boardview/:no", element: <BoardView /> },
+  { path: "*", element: <NotFound /> },
+]
+const paths2 = [
+  { path: "/", element: <Home /> },
+  { path: "/login", element: <Login /> },
+  { path: "/signup", element: <SignUp /> },
+  { path: "/userview", element: <UserView /> },
+  { path: "/useredit", element: <UserEdit /> },
+  { path: "/boardview/:no", element: <BoardView /> },
+  { path: "/boardedit/:no", element: <BoardEdit /> },
+  { path: "/boardadd", element: <BoardAdd /> },
+  { path: "*", element: <NotFound /> },
+]
 
 function App() {
-   const paths = [
-    {path: "/", element: <Home />},
-    {path: "/login", element: <Login />},
-    {path: "/signup", element: <SignUp />},
-    {path: "/userview", element: <UserView />},
-    {path: "/useredit", element: <UserEdit />},
-    {path: "/boardadd", element: <BoardAdd />},
-    {path: "/boardview/:no", element: <BoardView />},
-    {path: "/boardedit/:no", element: <BoardEdit />},
-    {path: "*", element: <NotFound />},
-  ]
+  const { isLogin } = useAuth()
+  const [paths, setPaths] = useState(paths1)
+  useEffect(() => {
+    if (isLogin) {
+      setPaths(paths2)
+    }
+  }, [isLogin])
+
   return (
     <>
       <Nav />
       <Routes>
-        { paths?.map((v, i) => <Route key={i} path={v.path} element={v.element} />) }
+        {paths?.map((v, i) => <Route key={i} path={v.path} element={v.element} />)}
       </Routes>
     </>
   )

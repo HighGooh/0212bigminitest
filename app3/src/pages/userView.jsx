@@ -15,10 +15,6 @@ const UserView = () => {
 	const path = import.meta.env.VITE_APP_FASTAPI_URL || "http://localhost:8001";
 
 	useEffect(() => {
-		if (!isLogin) {
-			alert("로그인이 필요한 페이지입니다.")
-			nav("/")
-		} else {
 			api.post("/me")
 				.then(res => {
 					console.log(res.data)
@@ -29,7 +25,6 @@ const UserView = () => {
 					setGender(res.data.user.gender)
 					setProfile(res.data.user.profileNo)
 				})
-		}
 	}, [])
 
 	const getUrl = () => {
@@ -53,7 +48,7 @@ const UserView = () => {
 		<div className="container mt-3 position-relative">
 			<h1 className="display-1 text-center">회원정보</h1>
 			<div>
-				<img src={getUrl()} className="border user_pt" />
+				<img src={getUrl()} className="border user_pt_view" />
 				{/* 처음엔 기본이미지, 수정하면 마지막 이미지 불러오기 */}
 			</div>
 			<form>

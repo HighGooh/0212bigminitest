@@ -12,20 +12,12 @@ const UserEdit = () => {
 		}
 	}
 	const nav = useNavigate()
-	const { isLogin } = useAuth()
+	const { isLogin, setChangeProfile, profilePath,checkAuth } = useAuth()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
 	const [modDate, setModDate] = useState('')
 	const [gender, setGender] = useState('')
-	const [profile, setProfile] = useState(0)
-	const path = import.meta.env.VITE_APP_FASTAPI_URL || "http://localhost:8001";
-	const getUrl = () => {
-		if (profile > 0)
-			return `${path}/profile?no=${profile}`
-		else
-			return "/img01.jpg"
-	}
 
 	// const imgEvent = e => {
 	// 	e.preventDefault()
@@ -41,6 +33,7 @@ const UserEdit = () => {
 			// 브라우저 내 임시 URL 생성 (미리보기용)
 			const objectUrl = URL.createObjectURL(selectedFile);
 			setPreview(objectUrl);
+
 		}
 	};
 
@@ -54,7 +47,9 @@ const UserEdit = () => {
 		api.post("/upload", formData, config)
 			.then(res => {
 				if (res.data.status) {
+					console.log(res.data.fileNo)
 					alert(res.data.msg)
+					setChangeProfile(res.data.fileNo)
 				}
 			})
 			.catch(err => console.error(err))
@@ -62,10 +57,6 @@ const UserEdit = () => {
 	}
 
 	useEffect(() => {
-		if (!isLogin) {
-			alert("로그인이 필요한 페이지입니다.")
-			nav("/")
-		} else {
 			api.post("/me")
 				.then(res => {
 					console.log(res.data)
@@ -74,10 +65,10 @@ const UserEdit = () => {
 					setRegDate(res.data.user.regDate)
 					setModDate(res.data.user.modDate)
 					setGender(res.data.user.gender)
-					setProfile(res.data.user.profileNo)
+					setChangeProfile(res.data.user.profileNo)
 				})
-		}
-	}, [])
+		} 
+	, [])
 
 	return (
 		<div className="container mt-3">
@@ -93,10 +84,10 @@ const UserEdit = () => {
 
 			<div className="mb-2 text-center">
 				{/* 이미지를 클릭하면 아래 숨겨진 input이 클릭되도록 useRef나 id를 활용합니다 */}
-				<label htmlFor="fileInput" className="d-flex justify-content-center" style={{ cursor: 'pointer' }}>
+				<label htmlFor="fileInput" className="user_label d-flex justify-content-center rounded-circle mt-3" style={{ cursor: 'pointer' }}>
 					<img
-						className="d-block rounded-circle img-thumbnail mt-3 border user_pt"
-						src={preview || getUrl()}
+						className="d-block rounded-circle img-thumbnail border user_pt"
+						src={preview || profilePath}
 						alt="logo"
 					/>
 				</label>
