@@ -6,6 +6,8 @@ const BoardAdd = () => {
   const nav = useNavigate("")
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+
+  // 게시글 추가 함수
   const submitEvent = e => {
     e.preventDefault()
     const board = { "title": title, "content": content }

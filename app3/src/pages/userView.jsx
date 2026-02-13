@@ -5,19 +5,20 @@ import { useAuth } from "@hooks/AuthProvider"
 
 const UserView = () => {
 	const nav = useNavigate()
-	const { isLogin } = useAuth()
+	
+	const { profilePath } = useAuth()
+
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
 	const [modDate, setModDate] = useState('')
 	const [gender, setGender] = useState('')
 	const [profile, setProfile] = useState(0)
-	const path = import.meta.env.VITE_APP_FASTAPI_URL || "http://localhost:8001";
 
+	// 초기값 불러오기
 	useEffect(() => {
 			api.post("/me")
 				.then(res => {
-					console.log(res.data)
 					setName(res.data.user.name)
 					setEmail(res.data.user.email)
 					setRegDate(res.data.user.regDate)
@@ -27,12 +28,7 @@ const UserView = () => {
 				})
 	}, [])
 
-	const getUrl = () => {
-		if (profile > 0)
-			return `${path}/profile?no=${profile}`
-		else
-			return "/img01.jpg"
-	}
+	// 탈퇴시 DB수정 함수
 	const delYn = () => {
 		api.post('/delYn', { email })
 			.then(res => {
@@ -44,12 +40,12 @@ const UserView = () => {
 				}
 			})
 	}
+
 	return (
 		<div className="container mt-3 position-relative">
 			<h1 className="display-1 text-center">회원정보</h1>
 			<div>
-				<img src={getUrl()} className="border user_pt_view" />
-				{/* 처음엔 기본이미지, 수정하면 마지막 이미지 불러오기 */}
+				<img src={profilePath} className="border user_pt_view" />
 			</div>
 			<form>
 				<div>

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router"
-import { useAuth } from "@hooks/AuthProvider"
 import { useState } from "react"
 import { api } from '@utils/network.js'
 
@@ -10,6 +9,8 @@ const SignUp = () => {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [gender, setGender] = useState(false)
+
+  // 이메일 중복 확인 함수
   const submitEvent1 = e => {
     e.preventDefault()
     api.post("/checkemail", { email })
@@ -23,6 +24,8 @@ const SignUp = () => {
       })
       .catch(err => console.log(err))
   }
+
+  //회원가입시 DB에 저장하는 함수
   const submitEvent2 = e => {
     e.preventDefault()
     if (checkMail) {
@@ -39,9 +42,10 @@ const SignUp = () => {
         .catch(err => console.log(err))
     } else {
       alert("이메일 중복 확인을 해주세요.")
+      // 이미 위에서 중복 확인했는데 왜 여기서 다시 체크해여?
+      // 중복확인 누른담에 이메일 바꿀까바?
     }
   }
-
 
   return (
     <div className="container mt-3 box_size" >
