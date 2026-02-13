@@ -11,6 +11,7 @@ const Home = () => {
     const [search, setSearch] = useState("")
         const searchEvent = (e)=>{
             e.preventDefault()
+            console.log(search)
             if(search){
                 const Params = {"search":search}
                 api.post('/search',Params)
@@ -33,7 +34,7 @@ const Home = () => {
                     <div className="btn-group">
                         <button type="button" onClick={()=>nav("/boardadd")} className="btn btn-primary">게시글 작성</button>
                     </div>
-                    <form className="d-flex" style={{ maxWidth: "300px" }}>
+                    <form className="d-flex" style={{ maxWidth: "300px" }} onSubmit={searchEvent}>
                         <input className="form-control me-2" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="검색어를 입력하세요" />
                         <button className="btn btn-outline-dark" type="submit">Search</button>
                     </form>
