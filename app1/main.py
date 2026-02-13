@@ -246,26 +246,26 @@ def read_root():
 class boardModel(BaseModel):
     params:str = Field(..., title="게시글넘버", description="게시글넘버 입니다.")
 
-@app.post("/boardview")
-def boardview(item : boardModel, req: Request):
+@app.post("/boardview/{no}")
+def boardview(no: int, req: Request):
     sql = f'''
-    select b.`title`, u.`name`, b.`content`, b.`user_email`
+    select b.`title`, u.`name`, b.`content`, b.`userEmail`
     from `test`.`board` as b
     inner Join `test`.`user` as u
-    on(b.`user_email` = u.email)
-    where (b.`no` = {item.params});
+    on(b.`userEmail` = u.email)
+    where (b.`no` = {no});
     '''
     data = findOne(sql)
 
-    uuid = req.cookies.get('user')
+    # uuid = req.cookies.get('user')
     
-    log_sql = f'''
-    select `token` from `test`.`login`
-    where `test`.`login`.`uuid` = '{uuid}'
-    '''
-    idData = findOne(log_sql)
-    result = jwt.decode(idData["token"], SECRET_KEY, algorithms=ALGORITHM)
-    return {"status": True, "boardData": data, "login": result}
+    # log_sql = f'''
+    # select `token` from `test`.`login`
+    # where `test`.`login`.`uuid` = '{uuid}'
+    # '''
+    # idData = findOne(log_sql)
+    # # result = jwt.decode(idData["token"], SECRET_KEY, algorithms=ALGORITHM)
+    return {"status": True, "boardData": data}
 
 @app.post('/delYn')
 def delYn(model: EmailModel, response:Response, request: Request):
@@ -316,12 +316,3 @@ def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: 
     '''
   save(sql)
   return {"status": True, "msg": "회원 정보 수정이 완료되었습니다.", "fileNo": result}
-
-@app.post('/change')
-def change(email: str):
-   sql = f"""
-SELECT profileNo
-FROM user
-WHERE `email` = {email} ;
-"""
-   return{'status': True}
