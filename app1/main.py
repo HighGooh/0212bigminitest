@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse
 import uuid
 from pathlib import Path
 import shutil
+from typing import Optional
 
 # security = HTTPBearer()
 
@@ -331,15 +332,16 @@ def saveFile(file):
   return 0
 
 @app.post("/upload")
-def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: UploadFile = File()):
-  result = saveFile(file)
+def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: Optional[UploadFile] = File(None), fileNo: int = Form()):
+  if file:
+    fileNo = saveFile(file)
   sql = f'''
     UPDATE test.`user`
-    SET `profileNo` = {result}, `name` = '{name}', `gender` = {gender}
+    SET `profileNo` = {fileNo}, `name` = '{name}', `gender` = {gender}
     WHERE `email` = '{email}';
     '''
-  data = save(sql)
-  return {"status": True, "msg": "회원 정보 수정이 완료되었습니다."}
+  save(sql)
+  return {"status": True, "msg": "회원 정보 수정이 완료되었습니다.", "fileNo": fileNo}
 
 class boardEditModel(BaseModel):
     title: str 
@@ -368,7 +370,7 @@ def boardDel(no:int):
 @app.post("/comment/{no}")
 def read_root(no:int):
     sql = f'''
-    select c.*, u.`name`
+    select c.*, u.`name`, u.`profileNo`
     from `test`.`comment` as c
     join `test`.`user` as u
     ON c.`userEmail` = u.`email`
