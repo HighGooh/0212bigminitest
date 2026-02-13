@@ -67,7 +67,7 @@ const Nav = () => {
 							}
 						</ul>
 						{
-							isLogin && <img src="../img01.jpg" className="border user_pt_nav mt-1 object-fit-cover" />
+							isLogin && <img src={profilePath} className="border user_pt_nav mt-1 object-fit-cover" />
 						}
 					</div>
 				</div>

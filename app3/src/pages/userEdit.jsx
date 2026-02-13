@@ -55,7 +55,7 @@ const UserEdit = () => {
 				}
 			})
 			.catch(err => console.error(err))
-
+		nav("/userview")	
 	}
 
 	useEffect(() => {

@@ -361,7 +361,7 @@ def boardDel(no:int):
 @app.post("/comment/{no}")
 def read_root(no:int):
     sql = f'''
-    select c.*, u.`name`
+    select c.*, u.`name`, u.`profileNo`
     from `test`.`comment` as c
     join `test`.`user` as u
     ON c.`userEmail` = u.`email`
