@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 const Home = () => {
     const nav = useNavigate()
@@ -8,6 +8,7 @@ const Home = () => {
     useEffect(() => {
         api.get('/getList').then(res => setList([...res.data.boardList]))
     }, [])
+    console.log(list)
     const [search, setSearch] = useState("")
         const searchEvent = (e)=>{
             e.preventDefault()
@@ -54,7 +55,7 @@ const Home = () => {
                                 <tr className="cursor-pointer" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
                                     <td>{i + 1}</td>
                                     <td>{v.title}</td>
-                                    <td>{v.regDate}</td>
+                                    <td>{v.regDate.split("T")[0]}</td>
                                     <td>{v.name}</td>
                                 </tr>
                             )
