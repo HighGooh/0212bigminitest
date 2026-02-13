@@ -12,7 +12,7 @@ const UserEdit = () => {
 		}
 	}
 	const nav = useNavigate()
-	const { isLogin, setChangeProfile, profilePath,checkAuth } = useAuth()
+	const { isLogin, setChangeProfile, profilePath,checkAuth, profile } = useAuth()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
@@ -40,7 +40,9 @@ const UserEdit = () => {
 	const submitEvent = e => {
 		e.preventDefault()
 		const formData = new FormData();
+		if (file !== null) 
 		formData.append("file", file);
+		formData.append("fileNo", profile)
 		formData.append("name", name);
 		formData.append("email", email);
 		formData.append("gender", gender);
