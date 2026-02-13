@@ -4,8 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from "@hooks/AuthProvider"
 
 const BoardView = () => {
-	const styles = { "resize": "none", "overFlow": "hidden" }
 	const nav = useNavigate()
+
 	const [title, setTitle] = useState("")
 	const [content, setContent] = useState("")
 	const param = useParams().no
@@ -16,16 +16,21 @@ const BoardView = () => {
 	const [commentCont, setCommentCont] = useState('')
 	const [clickCom, setClickCom] = useState('')
 	const [editCom, setEditCom] = useState('')
-	const { path } = useAuth()
 
+	const { path } = useAuth()
+	const styles = { "resize": "none", "overFlow": "hidden" }
+	const mode = (userEmail === boardEmail)
+
+	// 댓글 user profile사진 불러오는 함수
 	const getUrl = (profileNo) => {
 		if (profileNo > 0)
 			return `${path}/profile?no=${profileNo}`
 		else
 			return "/img01.jpg"
 	}
-
-	function onload() {
+	
+	//이건 지환이가 알려줄것임(～￣▽￣)～
+	const onload = () => {
 		document.querySelectorAll(".auto-resize").forEach(textarea => {
 			textarea.addEventListener("input", function () {
 				this.style.height = "auto";
@@ -33,6 +38,39 @@ const BoardView = () => {
 			});
 		});
 	}
+
+	// 게시물 삭제시 DB수정 및 HOME으로 이동
+	const boardDelClick = () => {
+		api.post(`/boarddel/${param}`)
+		alert("삭제되었습니다")
+		nav('/')
+	}
+	// 게시물 삭제시 DB수정 및 reset상태변경
+	const commentDelClick = (commentNo) => {
+		api.post(`/commentdel/${param}`, { commentNo })
+		alert("삭제되었습니다")
+		setReset(!reset)
+	}
+
+	// 댓글 추가시 DB에 추가 및 reset상태변경
+	const addComment = () => {
+		api.post(`/commentadd/${param}`, { userEmail, commentCont })
+		alert("댓글이 등록되었습니다")
+		setReset(!reset)
+		setCommentCont('')
+	}
+
+	// 댓글 수정시 DB에 추가 및 reset상태변경
+	const commentEdit = (commentNo) => {
+		if (editCom) {
+			api.post(`/commentedit`, { editCom, commentNo })
+			alert("댓글이 수정되었습니다")
+			setEditCom('')
+		}
+		setReset(!reset)
+	}
+
+	// 댓글 변경시 boardview 다시 세팅
 	useEffect(() => {
 		api.post(`/boardview/${param}`).then(res => {
 			setTitle(res.data.boardData["title"])
@@ -50,35 +88,6 @@ const BoardView = () => {
 		setClickCom('')
 	}, [reset])
 
-	const mode = (userEmail === boardEmail)
-
-	const boardDelClick = () => {
-		api.post(`/boarddel/${param}`)
-		alert("삭제되었습니다")
-		nav('/')
-	}
-
-	const commentDelClick = (commentNo) => {
-		api.post(`/commentdel/${param}`, { commentNo })
-		alert("삭제되었습니다")
-		setReset(!reset)
-	}
-
-	const addComment = () => {
-		api.post(`/commentadd/${param}`, { userEmail, commentCont })
-		alert("댓글이 등록되었습니다")
-		setReset(!reset)
-		setCommentCont('')
-	}
-
-	const commentEdit = (commentNo) => {
-		if (editCom) {
-			api.post(`/commentedit`, { editCom, commentNo })
-			alert("댓글이 수정되었습니다")
-			setEditCom('')
-		}
-		setReset(!reset)
-	}
 
 	return (
 		<div className="container mt-3">

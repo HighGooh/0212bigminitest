@@ -17,16 +17,6 @@ const Nav = () => {
 		}
 	}, [isLogin])
 
-	// useEffect(()=>{
-	// 	if(changeProfile){
-	// 		api.post('/change', {email})
-	// 		.then(res => {
-	// 			setProfile(res.data.user.profileNo)
-	// 			changeAuth()
-	// 		})
-	// 	}
-	// },[changeProfile])
-
 	return (
 		<nav className="navbar navbar-expand-lg bg-body-tertiary">
 			<div className="container-fluid position-relative">

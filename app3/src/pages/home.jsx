@@ -5,26 +5,23 @@ import { useAuth } from "../hooks/AuthProvider"
 
 const Home = () => {
     const nav = useNavigate()
+
     const [list, setList] = useState([])
-    const [page, setPage] = useState(0)
     const [pageLen, setPageLen] = useState(0)
     const [search, setSearch] = useState("")
     const [isSearch, setIsSearch] = useState('')
+
     const { isLogin } = useAuth()
-    useEffect(() => {
-        api.get(`/getList/0`).then(res => {
-            setPageLen(res.data.pageLen)
-            setList([...res.data.boardList])
-        })
-    }, [])
+
+    // 게시글작성 버튼 이벤트 함수
     const btnEvent = () => {
         if (!isLogin) {
             alert("로그인이 필요합니다.")
             nav("/login")
         } else nav('/boardadd')
     }
-    console.log(pageLen)
-    // list[0].map((v,i)=> console.log(v))
+
+    // 검색 이벤트 함수
     const searchEvent = (e) => {
         e.preventDefault()
         if (search) {
@@ -32,7 +29,6 @@ const Home = () => {
             api.post('/search/0', Params)
                 .then(res => {
                     setPageLen(res.data.pageLen)
-                    console.log(res.data)
                     if (res.data.status) setList([...res.data.boardList])
                 })
             setIsSearch(search)
@@ -43,6 +39,7 @@ const Home = () => {
         }
     }
 
+    // 페이지네이션 함수
     const pageChange = (index) => {
         const Params = { "search": search }
         if (isSearch) {
@@ -50,7 +47,6 @@ const Home = () => {
                 setPageLen(res.data.pageLen)
                 setList([...res.data.boardList])
             })
-           
         } else {
             api.get(`/getList/${index}`).then(res => {
                 setPageLen(res.data.pageLen)
@@ -58,6 +54,14 @@ const Home = () => {
             })
         }
     }
+
+    // 랜더링시 게시글 목록 불러오기
+    useEffect(() => {
+        api.get(`/getList/0`).then(res => {
+            setPageLen(res.data.pageLen)
+            setList([...res.data.boardList])
+        })
+    }, [])
 
     return (
         <>

@@ -4,27 +4,21 @@ import { api } from '@utils/network.js'
 import { useAuth } from "@hooks/AuthProvider"
 
 const UserEdit = () => {
-	const [preview, setPreview] = useState(null);
-	const [file, setFile] = useState(null) // 수정에 사진 파일 업로드 안할 시 422오류 뜸ㅠㅠ
+	const [preview, setPreview] = useState(null)
+	const [file, setFile] = useState(null)
 	const config = {
 		headers: {
 			"Content-Type": "multipart/form-data"
 		}
 	}
 	const nav = useNavigate()
-	const { isLogin, setChangeProfile, profilePath,checkAuth, profile } = useAuth()
+	const { setChangeProfile, profilePath, profile } = useAuth()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
 	const [modDate, setModDate] = useState('')
 	const [gender, setGender] = useState('')
 
-	// const imgEvent = e => {
-	// 	e.preventDefault()
-	// 	const formData = new FormData();
-	// 	formData.append("file", file)
-
-	// }
 	const imgEvent = (e) => {
 		const selectedFile = e.target.files[0];
 		if (selectedFile) {
@@ -49,7 +43,6 @@ const UserEdit = () => {
 		api.post("/upload", formData, config)
 			.then(res => {
 				if (res.data.status) {
-					console.log(res.data.fileNo)
 					alert(res.data.msg)
 					setChangeProfile(res.data.fileNo)
 				}
@@ -61,7 +54,6 @@ const UserEdit = () => {
 	useEffect(() => {
 			api.post("/me")
 				.then(res => {
-					console.log(res.data)
 					setName(res.data.user.name)
 					setEmail(res.data.user.email)
 					setRegDate(res.data.user.regDate)
