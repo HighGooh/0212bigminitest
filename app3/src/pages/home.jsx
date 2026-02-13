@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from "../hooks/AuthProvider"
-
 
 const Home = () => {
     const nav = useNavigate()
     const [list, setList] = useState([])
+    const [page, setPage] = useState(0)
+    const [pageLen, setPageLen] = useState(0)
+    const [search, setSearch] = useState("")
+    const [isSearch, setIsSearch] = useState('')
     const { isLogin } = useAuth()
     useEffect(() => {
-        api.get('/getList').then(res => setList([...res.data.boardList]))
+        api.get(`/getList/0`).then(res => {
+            setPageLen(res.data.pageLen)
+            setList([...res.data.boardList])
+        })
     }, [])
     const btnEvent = () => {
         if (!isLogin) {
@@ -17,24 +23,41 @@ const Home = () => {
             nav("/login")
         } else nav('/boardadd')
     }
-    console.log(list)
-    const [search, setSearch] = useState("")
-        const searchEvent = (e)=>{
-            e.preventDefault()
-            console.log(search)
-            if(search){
-                const Params = {"search":search}
-                api.post('/search',Params)
+    console.log(pageLen)
+    // list[0].map((v,i)=> console.log(v))
+    const searchEvent = (e) => {
+        e.preventDefault()
+        if (search) {
+            const Params = { "search": search }
+            api.post('/search/0', Params)
                 .then(res => {
+                    setPageLen(res.data.pageLen)
                     console.log(res.data)
+                    if (res.data.status) setList([...res.data.boardList])
+                })
+            setIsSearch(search)
+        } else {
+            api.get('/getList/0').then(res => {
                 if (res.data.status) setList([...res.data.boardList])
             })
-            }else{
-                api.get('/getList').then(res => {
-                if (res.data.status) setList([...res.data.boardList])
-            })
-            }
         }
+    }
+
+    const pageChange = (index) => {
+        const Params = { "search": search }
+        if (isSearch) {
+            api.post(`/search/${index}`, Params).then(res => {
+                setPageLen(res.data.pageLen)
+                setList([...res.data.boardList])
+            })
+           
+        } else {
+            api.get(`/getList/${index}`).then(res => {
+                setPageLen(res.data.pageLen)
+                setList([...res.data.boardList])
+            })
+        }
+    }
 
     return (
         <>
@@ -80,9 +103,11 @@ const Home = () => {
                                 <span aria-hidden="true">&laquo;</span>
                             </button>
                         </li>
-                        <li className="page-item"><button className="page-link" >1</button></li>
-                        <li className="page-item"><button className="page-link">2</button></li>
-                        <li className="page-item"><button className="page-link">3</button></li>
+                        {
+                            Array.from({ length: pageLen }, (_, i) => <li className="page-item" key={i}><button className="page-link" onClick={() => {
+                                pageChange(i)
+                            }}>{i + 1}</button></li>)
+                        }
                         <li className="page-item">
                             <button className="page-link" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
