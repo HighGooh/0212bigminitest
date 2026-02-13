@@ -31,6 +31,9 @@ class SignupModel(BaseModel):
     email: str
     gender: bool
 
+class searchModel(BaseModel):
+   search: str
+
 def set_token(email: str):
   try:
     sql = f"SELECT `no`, `name` FROM test.user WHERE `email` = '{email}' and `delYn` = 0"
@@ -405,3 +408,16 @@ def boardedit(model:commentEditModel,):
     '''
     save(sql)
     return {"status": True}
+  
+@app.post("/search")
+def read_root(txt:searchModel):
+    sql = f'''
+    select b.no, b.title, b.regDate ,u.name
+    from test.board as b
+    inner Join test.user as u
+    on(b.userEmail = u.email)
+    where b.delYn = 0
+    and b.title like "%{txt.search}%";
+    '''
+    data = findAll(sql)
+    return {"status": True, "boardList" : data}
