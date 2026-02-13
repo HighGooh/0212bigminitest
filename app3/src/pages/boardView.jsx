@@ -59,6 +59,7 @@ const BoardView = () => {
 		api.post(`/commentadd/${param}`, { userEmail, commentCont })
 		alert("댓글이 등록되었습니다")
 		setReset(!reset)
+		setCommentCont('')
 	}
 
 	const commentEdit = (commentNo) => {
