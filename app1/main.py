@@ -31,6 +31,9 @@ class SignupModel(BaseModel):
     email: str
     gender: bool
 
+class searchModel(BaseModel):
+   search: str
+
 def set_token(email: str):
   try:
     sql = f"SELECT `no`, `name` FROM test.user WHERE `email` = '{email}' and `delYn` = 0"
@@ -241,6 +244,18 @@ def read_root():
     where b.`delYn` = 0;
     '''
     data = findAll(sql)
+
+    result = []
+    list = []
+
+    for i in range(len(data)):
+      list.append(data[i])
+      if (i+1) % 5 == 0:
+         result.append(list)
+         list = []
+      if i+1 == len(data):
+        result.append(list)
+
     return {"status": True, "boardList" : data}
 
 class boardModel(BaseModel):
@@ -316,3 +331,93 @@ def upload(name: str = Form(), email: str = Form(), gender: int = Form(), file: 
     '''
   save(sql)
   return {"status": True, "msg": "회원 정보 수정이 완료되었습니다.", "fileNo": result}
+
+class boardEditModel(BaseModel):
+    title: str 
+    content: str 
+
+@app.post("/boardedit/{no}")
+def boardedit(item:boardEditModel, no:int):
+    sql = f'''
+    UPDATE `test`.`board`
+    SET `title` = '{item.title}', `content` = '{item.content}'
+    where (`no` = {no});
+    '''
+    print(item.title)
+    save(sql)
+    return {"status": True}
+
+@app.post("/boarddel/{no}")
+def boardDel(no:int):
+    sql = f'''
+    UPDATE `test`.`board`
+    SET `delYn` = 1
+    where (`no` = {no});
+    '''
+    save(sql)
+
+@app.post("/comment/{no}")
+def read_root(no:int):
+    sql = f'''
+    select c.*, u.`name`
+    from `test`.`comment` as c
+    join `test`.`user` as u
+    ON c.`userEmail` = u.`email`
+    WHERE   c.`boardNo` = {no} AND c.`delYn` = 0
+    ORDER BY `regDate` ASC;
+    '''
+    data = findAll(sql)
+
+
+    return {"status" : True, "commentData": data}
+
+class commentDelModel(BaseModel):
+    commentNo : int
+
+@app.post("/commentdel/{no}")
+def boardDel(no:int, model : commentDelModel):
+    sql = f'''
+    UPDATE `test`.`comment`
+    SET `delYn` = 1
+    where `no` = {model.commentNo} and `boardNo` = {no};
+    '''
+    save(sql)
+
+class commentAddModel(BaseModel):
+    userEmail : str
+    commentCont : str
+
+@app.post("/commentadd/{no}")
+def boardDel(no:int, model : commentAddModel):
+    sql = f'''
+    INSERT INTO `test`.`comment` (`boardNo`,`userEmail`,`comment`) value ('{no}', '{model.userEmail}','{model.commentCont}')
+    '''
+    save(sql)
+
+
+class commentEditModel(BaseModel):
+    editCom : str
+    commentNo : int
+
+@app.post("/commentedit")
+def boardedit(model:commentEditModel,):
+    sql = f'''
+    UPDATE `test`.`comment`
+    SET `comment` = '{model.editCom}'
+    where `no` = {model.commentNo};
+    '''
+    save(sql)
+    return {"status": True}
+  
+@app.post("/search")
+def read_root(txt:searchModel):
+    sql = f'''
+    select b.no, b.title, b.regDate ,u.name
+    from test.board as b
+    inner Join test.user as u
+    on(b.userEmail = u.email)
+    where b.delYn = 0
+    and b.title like "%{txt.search}%";
+    '''
+    data = findAll(sql)
+    return {"status": True, "boardList" : data}

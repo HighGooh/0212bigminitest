@@ -17,6 +17,24 @@ const Home = () => {
             nav("/login")
         } else nav('/boardadd')
     }
+    console.log(list)
+    const [search, setSearch] = useState("")
+        const searchEvent = (e)=>{
+            e.preventDefault()
+            console.log(search)
+            if(search){
+                const Params = {"search":search}
+                api.post('/search',Params)
+                .then(res => {
+                    console.log(res.data)
+                if (res.data.status) setList([...res.data.boardList])
+            })
+            }else{
+                api.get('/getList').then(res => {
+                if (res.data.status) setList([...res.data.boardList])
+            })
+            }
+        }
 
     return (
         <>
@@ -26,8 +44,8 @@ const Home = () => {
                     <div className="btn-group">
                         <button type="button" onClick={() => btnEvent()} className="btn btn-primary">게시글 작성</button>
                     </div>
-                    <form className="d-flex" style={{ maxWidth: "300px" }}>
-                        <input className="form-control me-2" type="search" placeholder="검색어를 입력하세요" />
+                    <form className="d-flex" style={{ maxWidth: "300px" }} onSubmit={searchEvent}>
+                        <input className="form-control me-2" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="검색어를 입력하세요" />
                         <button className="btn btn-outline-dark" type="submit">Search</button>
                     </form>
                 </div>
@@ -46,7 +64,7 @@ const Home = () => {
                                 <tr className="cursor-pointer" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
                                     <td>{i + 1}</td>
                                     <td>{v.title}</td>
-                                    <td>{v.regDate}</td>
+                                    <td>{v.regDate.split("T")[0]}</td>
                                     <td>{v.name}</td>
                                 </tr>
                             )
