@@ -3,6 +3,9 @@
     padding: 20px
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
 
 .user_pt_view {
     margin-top: 50px;
@@ -53,16 +56,27 @@
     display: none;
 }
 
-.comments{
+.comments {
     border-bottom: 1px solid #dee2e6;
 }
 
 .email_btn {
     width: 150px;
 }
+
 .comment-box .textArea_box {
     height: 100px !important;
 }
+
+.comment_boxSize {
+    width: calc(100% - 50px);
+}
+
+.table_none {
+    display: table-cell;
+    min-width: 110px;
+}
+
 @media screen and (max-width: 992px) {
     .user_pt_nav {
         display: none;
@@ -82,3 +96,9 @@
     }
 }
 
+
+@media screen and (max-width: 500px) {
+    .table_none {
+        display: none;
+    }
+}

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useAuth } from "@hooks/AuthProvider"
 import { api } from '@utils/network.js'
 
@@ -9,6 +9,8 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState("")
   const [checkEmail, setCheckEmail] = useState(false)
+
+  // 메일 발송 이벤트 함수
   const submitEvent1 = (e) => {
     e.preventDefault()
     api.post("/login", { email })
@@ -21,6 +23,8 @@ const Login = () => {
         }
       })
   }
+
+  // 로그인 이벤트 함수
   const submitEvent2 = (e) => {
     e.preventDefault()
     api.post("/code", { code })

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from "@hooks/AuthProvider"
 
 const BoardView = () => {
-	const styles = { "resize": "none", "overFlow": "hidden" }
 	const nav = useNavigate()
+	const param = useParams().no
+
 	const [title, setTitle] = useState("")
 	const [content, setContent] = useState("")
-	const param = useParams().no
 	const [boardEmail, setBoardEmail] = useState('')
 	const [userEmail, setUserEmail] = useState('')
 	const [commentList, setCommentList] = useState([])
@@ -16,7 +17,13 @@ const BoardView = () => {
 	const [clickCom, setClickCom] = useState('')
 	const [editCom, setEditCom] = useState('')
 
-	function onload() {
+	const { isLogin, getUrl } = useAuth()
+	const { path } = useAuth()
+	const styles = { "resize": "none", "overFlow": "hidden" }
+	const mode = (userEmail === boardEmail)	
+
+	//textaria height 자동 연장
+	const onLoad = () => {
 		document.querySelectorAll(".auto-resize").forEach(textarea => {
 			textarea.addEventListener("input", function () {
 				this.style.height = "auto";
@@ -24,6 +31,46 @@ const BoardView = () => {
 			});
 		});
 	}
+
+	// const onEditButtonClick = (e) => {
+	// 	const targetTextarea = e.target.closest('.comment').querySelector('.auto-resize');
+
+	// 	handleResize(targetTextarea);
+	// };
+
+	// 게시물 삭제시 DB수정 및 HOME으로 이동
+	const boardDelClick = () => {
+		api.post(`/boarddel/${param}`)
+		alert("삭제되었습니다")
+		nav('/')
+	}
+
+	// 게시물 삭제시 DB수정 및 reset상태변경
+	const commentDelClick = (commentNo) => {
+		api.post(`/commentdel/${param}`, { commentNo })
+		alert("삭제되었습니다")
+		setReset(!reset)
+	}
+
+	// 댓글 추가시 DB에 추가 및 reset상태변경
+	const addComment = () => {
+		api.post(`/commentadd/${param}`, { userEmail, commentCont })
+		alert("댓글이 등록되었습니다")
+		setReset(!reset)
+		setCommentCont('')
+	}
+
+	// 댓글 수정시 DB에 추가 및 reset상태변경
+	const commentEdit = (commentNo) => {
+		if (editCom) {
+			api.post(`/commentedit`, { editCom, commentNo })
+			alert("댓글이 수정되었습니다")
+			setEditCom('')
+		}
+		setReset(!reset)
+	}
+
+	// 댓글 변경시 boardview 다시 세팅
 	useEffect(() => {
 		api.post(`/boardview/${param}`).then(res => {
 			setTitle(res.data.boardData["title"])
@@ -41,35 +88,6 @@ const BoardView = () => {
 		setClickCom('')
 	}, [reset])
 
-	const mode = (userEmail === boardEmail)
-
-	const boardDelClick = () => {
-		api.post(`/boarddel/${param}`)
-		alert("삭제되었습니다")
-		nav('/')
-	}
-
-	const commentDelClick = (commentNo) => {
-		api.post(`/commentdel/${param}`, { commentNo })
-		alert("삭제되었습니다")
-		setReset(!reset)
-	}
-
-	const addComment = () => {
-		api.post(`/commentadd/${param}`, { userEmail, commentCont })
-		alert("댓글이 등록되었습니다")
-		setReset(!reset)
-	}
-
-	const commentEdit = (commentNo) => {
-		console.log(editCom)
-		if (editCom) {
-			api.post(`/commentedit`, {editCom, commentNo})
-			alert("댓글이 수정되었습니다")
-			setEditCom('')
-		}
-		setReset(!reset)
-	}
 
 	return (
 		<div className="container mt-3">
@@ -106,18 +124,21 @@ const BoardView = () => {
 					</div>
 				</div>
 			}
-			<div className="comment-box mb-4" onLoad={onload()}>
-				<div className="d-flex">
-					<div className="profile-img"></div>
+			{
+				isLogin &&
+				<div className="comment-box mb-4" onLoad={onLoad()}>
+					<div className="d-flex">
+						<div className="profile-img"></div>
 
-					<div className="flex-grow-1 mt-3 position-relative">
-						<textarea type="text" className="form-control auto-resize" style={styles} rows="1" id="comment_area" name="comment_area" value={commentCont} onChange={e => setCommentCont(e.target.value)}></textarea>
+						<div className="flex-grow-1 mt-3 position-relative">
+							<textarea type="text" className="form-control auto-resize" style={styles} rows="1" id="comment_area" name="comment_area" value={commentCont} onChange={e => setCommentCont(e.target.value)}></textarea>
+						</div>
+						<button className="btn btn-success btn-sm bottom-0 start- mx-2 mt-3" onClick={() => addComment()}>
+							등록
+						</button>
 					</div>
-					<button className="btn btn-success btn-sm bottom-0 start- mx-2 mt-3" onClick={() => addComment()}>
-						등록
-					</button>
 				</div>
-			</div>
+			}
 			<div>
 
 				{/* <!-- 댓글  --> */}
@@ -126,9 +147,9 @@ const BoardView = () => {
 						<div className="comments my-3 w-100 pb-2" key={i}>
 							<div className="d-flex align-items-start">
 								{/* <!-- 프로필 이미지 --> */}
-								<img src="../img01.jpg" className="rounded-circle me-3" width="50" height="50" alt="profile" />
+								<img src={getUrl(v.profileNo)} className="rounded-circle me-3" width="50" height="50" alt="profile" />	 {/* <!-- v.profileNo --> */}
 								{/* <!-- 댓글 내용 --> */}
-								<div className="flex-grow-1">
+								<div className="flex-grow-1 comment_boxSize">
 									<div className="d-flex justify-content-between align-items-center">
 										<div className="fw-bold">{v.name}</div>
 										{
@@ -163,23 +184,23 @@ const BoardView = () => {
 									</div>
 									{
 										clickCom !== i &&
-										<div className="mt-1">
+										<div className="mt-1" style={{ "whiteSpace": "pre-wrap" }}>
 											{v.comment}
 										</div>
 									}
 									{
 										clickCom === i &&
-										<div className="flex-grow-1 mt-3 position-relative">
+										<div className="flex-grow-1 mt-3 position-relative" onLoad={onLoad()}>
 											<textarea type="text" className="form-control auto-resize" style={styles} rows="1" id="comment_area" name="comment_area" value={editCom} onChange={e => setEditCom(e.target.value)}></textarea>
 										</div>
 									}
 									<div className="text-muted small my-1">
-										{v.modDate.split('T')[0]} {v.modDate.split('T')[1]}
+										{v.modDate.split('T')[0]} {v.modDate.split('T')[1]} {v.regDate === v.modDate ? "" : "수정됨"}
 									</div>
 								</div>
 							</div>
-						</div>)
-
+						</div>
+					)
 				}
 			</div>
 		</div>

@@ -4,27 +4,21 @@ import { api } from '@utils/network.js'
 import { useAuth } from "@hooks/AuthProvider"
 
 const UserEdit = () => {
-	const [preview, setPreview] = useState(null);
-	const [file, setFile] = useState(null) // 수정에 사진 파일 업로드 안할 시 422오류 뜸ㅠㅠ
+	const [preview, setPreview] = useState(null)
+	const [file, setFile] = useState(null) 
 	const config = {
 		headers: {
 			"Content-Type": "multipart/form-data"
 		}
 	}
 	const nav = useNavigate()
-	const { isLogin, setChangeProfile, profilePath,checkAuth } = useAuth()
+	const {setChangeProfile, profilePath, profile } = useAuth()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [regDate, setRegDate] = useState('')
 	const [modDate, setModDate] = useState('')
 	const [gender, setGender] = useState('')
 
-	// const imgEvent = e => {
-	// 	e.preventDefault()
-	// 	const formData = new FormData();
-	// 	formData.append("file", file)
-
-	// }
 	const imgEvent = (e) => {
 		const selectedFile = e.target.files[0];
 		if (selectedFile) {
@@ -40,26 +34,26 @@ const UserEdit = () => {
 	const submitEvent = e => {
 		e.preventDefault()
 		const formData = new FormData();
+		if (file !== null) 
 		formData.append("file", file);
+		formData.append("fileNo", profile)
 		formData.append("name", name);
 		formData.append("email", email);
 		formData.append("gender", gender);
 		api.post("/upload", formData, config)
 			.then(res => {
 				if (res.data.status) {
-					console.log(res.data.fileNo)
 					alert(res.data.msg)
 					setChangeProfile(res.data.fileNo)
 				}
 			})
 			.catch(err => console.error(err))
-
+		nav("/userview")	
 	}
 
 	useEffect(() => {
 			api.post("/me")
 				.then(res => {
-					console.log(res.data)
 					setName(res.data.user.name)
 					setEmail(res.data.user.email)
 					setRegDate(res.data.user.regDate)
@@ -69,21 +63,13 @@ const UserEdit = () => {
 				})
 		} 
 	, [])
+	// modData를 날려도 될 것인가?
 
 	return (
 		<div className="container mt-3">
 			<h1 className="display-1 text-center">회원정보 수정</h1>
-			{/* <form>
-			<img src="../img01.jpg" className="border user_pt" />
-		</form> */}
-			{/* <div className="mb-2 text-center">
-				<div className="d-flex justify-content-center">
-					<img className="d-block rounded-circle img-thumbnail mt-3 border user_pt" src={getUrl()} alt="logo" id="file" accept="image/*" onClick={imgEvent} onChange={e => setFile(e.target.files)} />
-				</div>
-			</div> */}
-
 			<div className="mb-2 text-center">
-				{/* 이미지를 클릭하면 아래 숨겨진 input이 클릭되도록 useRef나 id를 활용합니다 */}
+				{/* 이미지 */}
 				<label htmlFor="fileInput" className="user_label d-flex justify-content-center rounded-circle mt-3" style={{ cursor: 'pointer' }}>
 					<img
 						className="d-block rounded-circle img-thumbnail border user_pt"
@@ -92,7 +78,7 @@ const UserEdit = () => {
 					/>
 				</label>
 
-				{/* 실제로 파일을 받는 input은 숨겨둡니다 */}
+				{/* 실제로 파일을 받는 input */}
 				<input
 					id="fileInput"
 					type="file"

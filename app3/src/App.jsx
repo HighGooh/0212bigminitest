@@ -1,6 +1,6 @@
 
 import '@/styles/App.css'
-import { Routes, Route } from "react-router";
+import { Routes, Route } from "react-router"
 import NotFound from '@pages/NotFound.jsx'
 import Nav from '@pages/nav.jsx'
 import Home from '@pages/home.jsx'
@@ -11,9 +11,7 @@ import UserEdit from '@pages/userEdit.jsx'
 import BoardAdd from '@pages/boardAdd.jsx'
 import BoardView from '@pages/boardView.jsx'
 import BoardEdit from '@pages/boardEdit.jsx'
-import { useAuth } from '@hooks/AuthProvider';
-import { useEffect, useState } from 'react';
-
+import { useAuth } from '@hooks/AuthProvider'
 
 const paths1 = [
   { path: "/", element: <Home /> },
@@ -35,20 +33,20 @@ const paths2 = [
 ]
 
 function App() {
-  const { isLogin } = useAuth()
-  const [paths, setPaths] = useState(paths1)
-  useEffect(() => {
-    if (isLogin) {
-      setPaths(paths2)
-    }
-  }, [isLogin])
+  const { isLogin, isPending } = useAuth()
 
   return (
     <>
+    { 
+      isPending &&
+    <>
       <Nav />
       <Routes>
-        {paths?.map((v, i) => <Route key={i} path={v.path} element={v.element} />)}
+        {isLogin && paths2?.map((v, i) => <Route key={i} path={v.path} element={v.element} />)}
+        {!isLogin && paths1?.map((v, i) => <Route key={i} path={v.path} element={v.element} />)}
       </Routes>
+    </>
+    }
     </>
   )
 }

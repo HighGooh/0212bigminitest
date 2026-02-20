@@ -1,40 +1,73 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
-import { useNavigate } from 'react-router'
-import { useAuth } from "../hooks/AuthProvider"
-
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from "@hooks/AuthProvider"
 
 const Home = () => {
     const nav = useNavigate()
     const [list, setList] = useState([])
+    const [page, setPage] = useState(0)
+    const [pageLen, setPageLen] = useState(0)
+    const [search, setSearch] = useState("")
+    const [isSearch, setIsSearch] = useState('')
     const { isLogin } = useAuth()
-    useEffect(() => {
-        api.get('/getList').then(res => setList([...res.data.boardList]))
-    }, [])
+    
+     // 게시글작성 버튼 이벤트 함수
     const btnEvent = () => {
         if (!isLogin) {
             alert("로그인이 필요합니다.")
             nav("/login")
         } else nav('/boardadd')
     }
-    console.log(list)
-    const [search, setSearch] = useState("")
-        const searchEvent = (e)=>{
-            e.preventDefault()
-            console.log(search)
-            if(search){
-                const Params = {"search":search}
-                api.post('/search',Params)
+
+     // 검색 이벤트 함수
+    const searchEvent = (e) => {
+        e.preventDefault()
+        if (search) {
+            const Params = { "search": search }
+            api.post('/search/0', Params)
                 .then(res => {
-                    console.log(res.data)
-                if (res.data.status) setList([...res.data.boardList])
+                    setPageLen(res.data.pageLen)
+                    if (res.data.status) setList([...res.data.boardList])
+                })
+            setIsSearch(search)
+        } else {
+            api.get('/getlist/0').then(res => {
+                if (res.data.status) {
+                    setList([...res.data.boardList])
+                    setPageLen(res.data.pageLen)
+                }
             })
-            }else{
-                api.get('/getList').then(res => {
-                if (res.data.status) setList([...res.data.boardList])
-            })
-            }
         }
+        setPage(0)
+    }
+
+    // 페이지네이션 함수
+    const pageChange = (index) => {
+        const Params = { "search": search }
+        if (isSearch) {
+            api.post(`/search/${index}`, Params).then(res => {
+                setPageLen(res.data.pageLen)
+                setList([...res.data.boardList])
+            })
+            setPage(index)
+        } else {
+            api.get(`/getlist/${index}`).then(res => {
+                setPageLen(res.data.pageLen)
+                setList([...res.data.boardList])
+            })
+            setPage(index)
+        }
+    }
+
+    // 랜더링시 게시글 목록 불러오기
+    useEffect(() => {
+        api.get(`/getlist/0`).then(res => {
+            setPageLen(res.data.pageLen)
+            setList([...res.data.boardList])
+        })
+    }, [])
+
 
     return (
         <>
@@ -42,29 +75,29 @@ const Home = () => {
                 <h1 className="display-1 text-center">게시판</h1>
                 <div className="d-flex justify-content-between align-items-center mt-4">
                     <div className="btn-group">
-                        <button type="button" onClick={() => btnEvent()} className="btn btn-primary">게시글 작성</button>
+                        <button type="button" onClick={() => btnEvent()} className="btn btn-primary" style={{"width" : "120px"}}>게시글 작성</button>
                     </div>
                     <form className="d-flex" style={{ maxWidth: "300px" }} onSubmit={searchEvent}>
                         <input className="form-control me-2" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="검색어를 입력하세요" />
                         <button className="btn btn-outline-dark" type="submit">Search</button>
                     </form>
                 </div>
-                <table className="table table-hover mt-3 text-center">
+                <table className="table table-hover mt-3 text-center home_table">
                     <thead className="table-dark">
                         <tr>
-                            <th>no</th>
+                            <th style={{"width" : "50px"}}>no</th>
                             <th>게시글</th>
-                            <th>작성날짜</th>
-                            <th>작성자</th>
+                            <th className="table_none">작성날짜</th>
+                            <th style={{"minWidth" : "110px"}}>작성자</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             list.map((v, i) =>
-                                <tr className="cursor-pointer" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
-                                    <td>{i + 1}</td>
+                                <tr className="cursor-pointer board_list" key={i} onClick={() => nav(`/boardview/${v.no}`)}>
+                                    <td>{v.no}</td>
                                     <td>{v.title}</td>
-                                    <td>{v.regDate.split("T")[0]}</td>
+                                    <td className="table_none">{v.regDate.split("T")[0]}</td>
                                     <td>{v.name}</td>
                                 </tr>
                             )
@@ -75,15 +108,17 @@ const Home = () => {
                 {/* <!-- Pagination 영역  --> */}
                 <nav aria-label="Page navigation example">
                     <ul className="pagination justify-content-center mt-4">
-                        <li className="page-item">
+                        <li className="page-item" onClick={()=>{page > 0 && pageChange(page-1)}}>
                             <button className="page-link" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </button>
                         </li>
-                        <li className="page-item"><button className="page-link" >1</button></li>
-                        <li className="page-item"><button className="page-link">2</button></li>
-                        <li className="page-item"><button className="page-link">3</button></li>
-                        <li className="page-item">
+                        {
+                            Array.from({ length: pageLen }, (_, i) => <li className={ page === i ? "page-item active" : "page-item"} key={i}><button className="page-link" onClick={() => {
+                                pageChange(i)
+                            }}>{i + 1}</button></li>)
+                        }
+                        <li className="page-item" onClick={()=>{page < pageLen-1 &&pageChange(page+1)}}>
                             <button className="page-link" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </button>

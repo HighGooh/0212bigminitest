@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react"
 import { api } from '@utils/network.js'
 import { useParams } from "react-router"
-import { useAuth } from "@hooks/AuthProvider.jsx"
 import { useNavigate } from "react-router"
 
 const BoardEdit = () => {
 
 	const nav = useNavigate()
+
 	const [title, setTitle] = useState("")
 	const [content, setContent] = useState("")
+
+	// boardview로 넘어가기 위한 param
 	const param = useParams().no
 
-
+	// DB에서 게시글 불러오기
 	useEffect(() => {
 		api.post(`/boardview/${param}`).then(res => {
 			setTitle(res.data.boardData.title)
@@ -19,12 +21,12 @@ const BoardEdit = () => {
 		}).catch(err => console.log(err))
 	}, [])
 
+	// DB에 게시글 수정내역 Update
 	const submitEvent = (e) => {
 		e.preventDefault()
 		const paramData = { "title": title, "content": content }
-		api.post(`/boardedit/${param}`, paramData).then(res => {
-			console.log(res.data)
-		}).catch(err => console.log(err))
+		api.post(`/boardedit/${param}`, paramData)
+			.catch(err => console.log(err))
 		alert("수정되었습니다")
 		nav(`/boardview/${param}`)
 	}

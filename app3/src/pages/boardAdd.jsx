@@ -6,6 +6,8 @@ const BoardAdd = () => {
   const nav = useNavigate("")
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+
+  // 게시글 추가 함수
   const submitEvent = e => {
     e.preventDefault()
     const board = { "title": title, "content": content }
@@ -35,10 +37,10 @@ const BoardAdd = () => {
         </div>
         <div className="d-flex">
           <div className="p-2 flex-fill d-grid">
-            <button className="btn btn-primary">등록</button>
+            <button type='submit' className="btn btn-primary">등록</button>
           </div>
           <div className="p-2 flex-fill d-grid">
-            <button onClick={() => nav("/")} className="btn btn-primary">취소</button>
+            <button type="button" onClick={() => nav("/")} className="btn btn-primary">취소</button>
           </div>
         </div>
       </form>

@@ -1,5 +1,6 @@
-from settings import settings
 import mariadb
+
+from src.core.settings import settings
 
 conn_params = {
   "user" : settings.mariadb_user,
@@ -66,7 +67,7 @@ def save(sql):
     print(f"MariaDB Error : {e}")
   return result
 
-def add_key(sql):
+def addKey(sql):
   result = [False, 0]
   try:
     conn = getConn()
